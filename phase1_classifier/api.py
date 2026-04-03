@@ -17,15 +17,21 @@ print("[STEP 2] core imports loaded")
 # ── DOWNLOAD MODEL FILES ──────────────────────────────────────────────────────
 os.makedirs("models", exist_ok=True)
 
-if not os.path.exists("models/ecg_model_new.keras"):
-    print("[INFO] Downloading ecg_model_new.keras...")
+if not os.path.exists("models/model_config.json"):
+    print("[INFO] Downloading model_config.json...")
     gdown.download(
-        "https://drive.google.com/uc?id=1rnhKgjrYIOAOd4tICEwLXHVJImjRMzSY&confirm=t",
-        "models/ecg_model_new.keras",
-        quiet=False,
-        fuzzy=True
+        "https://drive.google.com/uc?id=1WVsW-QQ1nTacU55lTOCUxF9vM8BjJ72c&confirm=t",
+        "models/model_config.json",
+        quiet=False, fuzzy=True
     )
-    print("[INFO] ecg_model_new.keras downloaded")
+
+if not os.path.exists("models/model_weights.weights.h5"):
+    print("[INFO] Downloading model_weights.weights.h5...")
+    gdown.download(
+        "https://drive.google.com/uc?id=14nXhJIGxk1yCc65qWn29z0W9KGgzgDDq&confirm=t",
+        "models/model_weights.weights.h5",
+        quiet=False, fuzzy=True
+    )
 
 if not os.path.exists("models/classes.npy"):
     print("[INFO] Downloading classes.npy...")
@@ -54,16 +60,12 @@ except Exception as e:
     sys.exit(1)
 
 # ── LOAD MODEL ────────────────────────────────────────────────────────────────
-try:
-    print("[STEP 8] Loading model...")
-    model = tf.keras.models.load_model("models/ecg_model_new.keras")
-    classes = np.load("models/classes.npy", allow_pickle=True)
-    print("[STEP 9] Model loaded successfully!")
-except Exception as e:
-    print(f"[ERROR] Failed to load model: {e}")
-    traceback.print_exc()
-    sys.exit(1)
-
+print("[STEP 8] Loading model...")
+with open("models/model_config.json") as f:
+    model = tf.keras.models.model_from_json(f.read())
+model.load_weights("models/model_weights.weights.h5")
+classes = np.load("models/classes.npy", allow_pickle=True)
+print("[STEP 9] Model loaded successfully!")
 SEGMENT_LENGTH = 187
 
 # ── FASTAPI APP ───────────────────────────────────────────────────────────────

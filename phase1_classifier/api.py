@@ -8,7 +8,6 @@ print("[STEP 1] imports starting...")
 import gdown
 import numpy as np
 import tensorflow as tf
-import tf_keras
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -18,15 +17,15 @@ print("[STEP 2] core imports loaded")
 # ── DOWNLOAD MODEL FILES ──────────────────────────────────────────────────────
 os.makedirs("models", exist_ok=True)
 
-if not os.path.exists("models/ecg_final.h5"):
-    print("[INFO] Downloading ecg_final.h5...")
+if not os.path.exists("models/weights.npy"):
+    print("[INFO] Downloading weights.npy...")
     gdown.download(
-        "https://drive.google.com/uc?id=17loTkLsicnlVvLaAnrc0PTHYqhhg5puH&confirm=t",
-        "models/ecg_final.h5",
+        "https://drive.google.com/uc?id=1GJisbEXL_Z8u3u2Xp54aKglw1jal1IH1&confirm=t",
+        "models/weights.npy",
         quiet=False,
         fuzzy=True
     )
-    print("[INFO] ecg_final.h5 downloaded")
+    print("[INFO] weights.npy downloaded")
 
 if not os.path.exists("models/classes.npy"):
     print("[INFO] Downloading classes.npy...")
@@ -54,11 +53,36 @@ except Exception as e:
     traceback.print_exc()
     sys.exit(1)
 
-# ── LOAD MODEL ────────────────────────────────────────────────────────────────
-print("[STEP 8] Loading model...")
-model = tf_keras.models.load_model("models/ecg_final.h5", compile=False)
-classes = np.load("models/classes.npy", allow_pickle=True)
-print("[STEP 9] Model loaded successfully!")
+# ── BUILD AND LOAD MODEL ──────────────────────────────────────────────────────
+try:
+    print("[STEP 8] Building and loading model...")
+    inputs = tf.keras.Input(shape=(187, 1))
+    x = tf.keras.layers.Conv1D(32, 5, activation='relu')(inputs)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.MaxPooling1D(2)(x)
+    x = tf.keras.layers.Conv1D(64, 5, activation='relu')(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.MaxPooling1D(2)(x)
+    x = tf.keras.layers.Conv1D(128, 3, activation='relu')(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.MaxPooling1D(2)(x)
+    x = tf.keras.layers.Flatten()(x)
+    x = tf.keras.layers.Dense(128, activation='relu')(x)
+    x = tf.keras.layers.Dropout(0.5)(x)
+    x = tf.keras.layers.Dense(64, activation='relu')(x)
+    x = tf.keras.layers.Dropout(0.5)(x)
+    outputs = tf.keras.layers.Dense(4, activation='softmax')(x)
+    model = tf.keras.Model(inputs, outputs)
+
+    weights = np.load("models/weights.npy", allow_pickle=True)
+    model.set_weights(weights)
+    classes = np.load("models/classes.npy", allow_pickle=True)
+    print("[STEP 9] Model loaded successfully!")
+except Exception as e:
+    print(f"[ERROR] Failed to load model: {e}")
+    traceback.print_exc()
+    sys.exit(1)
+
 SEGMENT_LENGTH = 187
 
 # ── FASTAPI APP ───────────────────────────────────────────────────────────────

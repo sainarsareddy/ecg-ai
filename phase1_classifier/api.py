@@ -22,14 +22,36 @@ from pydantic import BaseModel
 # Download model files if not present
 os.makedirs("models", exist_ok=True)
 
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+print("[STEP 1] imports starting...")
+import numpy as np
+import tensorflow as tf
+
+print("[STEP 2] tensorflow loaded")
+import gdown
+
+print("[STEP 3] gdown loaded")
+
+# Download model files if not present
+os.makedirs("models", exist_ok=True)
+
 if not os.path.exists("models/ecg_model.h5"):
-    print("[INFO] Downloading ecg_model.h5 from Google Drive...")
+    print("[STEP 4] Downloading ecg_model.h5...")
     gdown.download("https://drive.google.com/uc?id=1CgB3tIMCkn1MPuhEFGB8EXeIJbC8WNv3", "models/ecg_model.h5", quiet=False)
+    print("[STEP 4] Done")
 
 if not os.path.exists("models/classes.npy"):
-    print("[INFO] Downloading classes.npy from Google Drive...")
+    print("[STEP 5] Downloading classes.npy...")
     gdown.download("https://drive.google.com/uc?id=1QCuVgdG4kW3yPHIRgN6dfUgN8g6RBMzM", "models/classes.npy", quiet=False)
+    print("[STEP 5] Done")
+
+print("[STEP 6] Loading model...")
 model = tf.keras.models.load_model("models/ecg_model.h5")
+print("[STEP 7] Model loaded successfully")
 classes = np.load("models/classes.npy", allow_pickle=True)
 
 SEGMENT_LENGTH = 187

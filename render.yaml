@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: ecg-api
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn phase1_classifier.api:app --host 0.0.0.0 --port 8000

@@ -40,14 +40,22 @@ print("[STEP 3] gdown loaded")
 os.makedirs("models", exist_ok=True)
 
 if not os.path.exists("models/ecg_model.h5"):
-    print("[STEP 4] Downloading ecg_model.h5...")
-    gdown.download("https://drive.google.com/uc?id=1CgB3tIMCkn1MPuhEFGB8EXeIJbC8WNv3", "models/ecg_model.h5", quiet=False)
-    print("[STEP 4] Done")
+    print("[INFO] Downloading ecg_model.h5...")
+    gdown.download(
+        "https://drive.google.com/uc?id=1CgB3tIMCkn1MPuhEFGB8EXeIJbC8WNv3&confirm=t",
+        "models/ecg_model.h5",
+        quiet=False,
+        fuzzy=True
+    )
 
 if not os.path.exists("models/classes.npy"):
-    print("[STEP 5] Downloading classes.npy...")
-    gdown.download("https://drive.google.com/uc?id=1QCuVgdG4kW3yPHIRgN6dfUgN8g6RBMzM", "models/classes.npy", quiet=False)
-    print("[STEP 5] Done")
+    print("[INFO] Downloading classes.npy...")
+    gdown.download(
+        "https://drive.google.com/uc?id=1QCuVgdG4kW3yPHIRgN6dfUgN8g6RBMzM&confirm=t",
+        "models/classes.npy",
+        quiet=False,
+        fuzzy=True
+    )
 
 print("[STEP 6] Loading model...")
 model = tf.keras.models.load_model("models/ecg_model.h5")

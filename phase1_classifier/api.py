@@ -8,6 +8,7 @@ print("[STEP 1] imports starting...")
 import gdown
 import numpy as np
 import tensorflow as tf
+import tf_keras
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel

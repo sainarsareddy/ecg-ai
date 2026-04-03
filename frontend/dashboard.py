@@ -10,7 +10,7 @@ import streamlit as st
 import wfdb
 
 # ── CONFIG ────────────────────────────────────────────────────────────────────
-API_URL = "http://localhost:8000"
+API_URL = "https://ecg-ai-4xji.onrender.com"
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FEEDBACK_FILE = os.path.join(ROOT_DIR, "feedback_dataset.csv")
 REPORTS_DIR = os.path.join(ROOT_DIR, "reports")

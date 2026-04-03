@@ -3,6 +3,7 @@ import os
 import uuid
 from datetime import datetime
 
+from dotenv import load_dotenv
 from groq import Groq
 from reportlab.lib import colors
 from reportlab.lib.colors import HexColor
@@ -12,7 +13,8 @@ from reportlab.lib.units import inch
 from reportlab.platypus import (Paragraph, SimpleDocTemplate, Spacer, Table,
                                 TableStyle)
 
-client = Groq(api_key="REPLACED")
+load_dotenv()
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 def generate_report(condition, confidence, features, risk, agent_decision):
 

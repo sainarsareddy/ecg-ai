@@ -2,6 +2,7 @@ fastapi
 uvicorn
 numpy
 tensorflow==2.15.0
+tf-keras==2.15.0
 keras==2.15.0
 scikit-learn
 scipy
@@ -16,4 +17,3 @@ anthropic
 pydantic
 httpx
 gdown
-tf_keras

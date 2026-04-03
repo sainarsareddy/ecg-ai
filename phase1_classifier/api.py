@@ -55,7 +55,7 @@ except Exception as e:
 
 # ── LOAD MODEL ────────────────────────────────────────────────────────────────
 print("[STEP 8] Loading model...")
-model = tf.keras.models.load_model("models/ecg_final.h5", compile=False)
+model = tf_keras.models.load_model("models/ecg_final.h5", compile=False)
 classes = np.load("models/classes.npy", allow_pickle=True)
 print("[STEP 9] Model loaded successfully!")
 SEGMENT_LENGTH = 187

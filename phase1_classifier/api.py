@@ -11,6 +11,7 @@ import os
 import gdown
 import numpy as np
 import tensorflow as tf
+import tf_keras
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from phase2_features.extractor import extract_features
@@ -58,7 +59,7 @@ if not os.path.exists("models/classes.npy"):
     )
 
 print("[STEP 6] Loading model...")
-model = tf.keras.models.load_model("models/ecg_model.h5")
+model = tf.keras.models.load_model("models/ecg_model.h5", compile=False)
 print("[STEP 7] Model loaded successfully")
 classes = np.load("models/classes.npy", allow_pickle=True)
 

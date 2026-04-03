@@ -17,21 +17,15 @@ print("[STEP 2] core imports loaded")
 # ── DOWNLOAD MODEL FILES ──────────────────────────────────────────────────────
 os.makedirs("models", exist_ok=True)
 
-if not os.path.exists("models/model_config.json"):
-    print("[INFO] Downloading model_config.json...")
+if not os.path.exists("models/ecg_final.h5"):
+    print("[INFO] Downloading ecg_final.h5...")
     gdown.download(
-        "https://drive.google.com/uc?id=1WVsW-QQ1nTacU55lTOCUxF9vM8BjJ72c&confirm=t",
-        "models/model_config.json",
-        quiet=False, fuzzy=True
+        "https://drive.google.com/uc?id=17loTkLsicnlVvLaAnrc0PTHYqhhg5puH&confirm=t",
+        "models/ecg_final.h5",
+        quiet=False,
+        fuzzy=True
     )
-
-if not os.path.exists("models/model_weights.weights.h5"):
-    print("[INFO] Downloading model_weights.weights.h5...")
-    gdown.download(
-        "https://drive.google.com/uc?id=14nXhJIGxk1yCc65qWn29z0W9KGgzgDDq&confirm=t",
-        "models/model_weights.weights.h5",
-        quiet=False, fuzzy=True
-    )
+    print("[INFO] ecg_final.h5 downloaded")
 
 if not os.path.exists("models/classes.npy"):
     print("[INFO] Downloading classes.npy...")
@@ -61,9 +55,7 @@ except Exception as e:
 
 # ── LOAD MODEL ────────────────────────────────────────────────────────────────
 print("[STEP 8] Loading model...")
-with open("models/model_config.json") as f:
-    model = tf.keras.models.model_from_json(f.read())
-model.load_weights("models/model_weights.weights.h5")
+model = tf.keras.models.load_model("models/ecg_final.h5", compile=False)
 classes = np.load("models/classes.npy", allow_pickle=True)
 print("[STEP 9] Model loaded successfully!")
 SEGMENT_LENGTH = 187

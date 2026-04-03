@@ -1,43 +1,20 @@
-import sys
-
-sys.path.append("..")
-import os
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# ── LOAD MODEL ────────────────────────────────────────────────────────────────
-import os
-
-import gdown
-import numpy as np
-import tensorflow as tf
-import tf_keras
-import uvicorn
-from fastapi import FastAPI, HTTPException
-from phase2_features.extractor import extract_features
-from phase3_risk.risk_score import calculate_risk
-from phase4_agent.cardiac_agent import make_decision
-from phase5_report.report_generator import generate_report
-from pydantic import BaseModel
-
-# Download model files if not present
-os.makedirs("models", exist_ok=True)
-
 import os
 import sys
+import traceback
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 print("[STEP 1] imports starting...")
+import gdown
 import numpy as np
 import tensorflow as tf
+import uvicorn
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 
-print("[STEP 2] tensorflow loaded")
-import gdown
+print("[STEP 2] core imports loaded")
 
-print("[STEP 3] gdown loaded")
-
-# Download model files if not present
+# ── DOWNLOAD MODEL FILES ──────────────────────────────────────────────────────
 os.makedirs("models", exist_ok=True)
 
 if not os.path.exists("models/ecg_model.h5"):
@@ -48,6 +25,7 @@ if not os.path.exists("models/ecg_model.h5"):
         quiet=False,
         fuzzy=True
     )
+    print("[INFO] ecg_model.h5 downloaded")
 
 if not os.path.exists("models/classes.npy"):
     print("[INFO] Downloading classes.npy...")
@@ -57,14 +35,38 @@ if not os.path.exists("models/classes.npy"):
         quiet=False,
         fuzzy=True
     )
+    print("[INFO] classes.npy downloaded")
 
-print("[STEP 6] Loading model...")
-model = tf.keras.models.load_model("models/ecg_model.h5", compile=False)
-print("[STEP 7] Model loaded successfully")
-classes = np.load("models/classes.npy", allow_pickle=True)
+# ── IMPORT PHASE MODULES ──────────────────────────────────────────────────────
+try:
+    print("[STEP 3] importing phase modules...")
+    from phase2_features.extractor import extract_features
+    print("[STEP 4] phase2 ok")
+    from phase3_risk.risk_score import calculate_risk
+    print("[STEP 5] phase3 ok")
+    from phase4_agent.cardiac_agent import get_recent_decisions, make_decision
+    print("[STEP 6] phase4 ok")
+    from phase5_report.report_generator import generate_report
+    print("[STEP 7] phase5 ok")
+except Exception as e:
+    print(f"[ERROR] Failed to import phase modules: {e}")
+    traceback.print_exc()
+    sys.exit(1)
+
+# ── LOAD MODEL ────────────────────────────────────────────────────────────────
+try:
+    print("[STEP 8] Loading model...")
+    model = tf.keras.models.load_model("models/ecg_model.h5", compile=False)
+    classes = np.load("models/classes.npy", allow_pickle=True)
+    print("[STEP 9] Model loaded successfully!")
+except Exception as e:
+    print(f"[ERROR] Failed to load model: {e}")
+    traceback.print_exc()
+    sys.exit(1)
 
 SEGMENT_LENGTH = 187
 
+# ── FASTAPI APP ───────────────────────────────────────────────────────────────
 app = FastAPI(
     title="ECG Intelligence API",
     description="ECG Classifier with Clinical Features and Risk Assessment.",
@@ -88,32 +90,23 @@ def recent_decisions():
 def predict(data: ECGInput):
     signal = np.array(data.ecg_signal)
 
-    # Validate minimum length
     if len(signal) < 360:
         raise HTTPException(
             status_code=400,
             detail=f"Signal must be at least 360 samples. Got {len(signal)}."
         )
 
-    # Use first 187 samples for model prediction
     predict_signal = signal[:187]
     predict_signal = (predict_signal - np.mean(predict_signal)) / (np.std(predict_signal) + 1e-8)
     predict_signal = predict_signal.reshape(1, SEGMENT_LENGTH, 1)
 
-    # Predict condition
     predictions = model.predict(predict_signal)
     confidence = float(np.max(predictions) * 100)
     condition = classes[np.argmax(predictions)]
 
-    # Extract clinical features from full signal
     features = extract_features(data.ecg_signal)
-
-    # Calculate risk score
     risk = calculate_risk(features, confidence)
-
-    # ACDA Decision
     agent_decision = make_decision(condition, confidence, features, risk)
-
     report = generate_report(condition, confidence, features, risk, agent_decision)
 
     return {

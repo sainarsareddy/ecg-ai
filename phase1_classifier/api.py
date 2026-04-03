@@ -1,6 +1,9 @@
 import sys
 
 sys.path.append("..")
+import os
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # ── LOAD MODEL ────────────────────────────────────────────────────────────────
 import os
@@ -12,7 +15,7 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from phase2_features.extractor import extract_features
 from phase3_risk.risk_score import calculate_risk
-from phase4_agent.cardiac_agent import get_recent_decisions, make_decision
+from phase4_agent.cardiac_agent import make_decision
 from phase5_report.report_generator import generate_report
 from pydantic import BaseModel
 

@@ -13,4 +13,4 @@ groq
 python-dotenv
 anthropic
 pydantic
-httpx
+httpxgdown

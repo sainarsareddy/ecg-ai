@@ -2,18 +2,30 @@ import sys
 
 sys.path.append("..")
 
+# ── LOAD MODEL ────────────────────────────────────────────────────────────────
+import os
+
+import gdown
 import numpy as np
 import tensorflow as tf
 import uvicorn
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-
 from phase2_features.extractor import extract_features
 from phase3_risk.risk_score import calculate_risk
 from phase4_agent.cardiac_agent import get_recent_decisions, make_decision
 from phase5_report.report_generator import generate_report
+from pydantic import BaseModel
 
-# ── LOAD MODEL ────────────────────────────────────────────────────────────────
+# Download model files if not present
+os.makedirs("models", exist_ok=True)
+
+if not os.path.exists("models/ecg_model.h5"):
+    print("[INFO] Downloading ecg_model.h5 from Google Drive...")
+    gdown.download("https://drive.google.com/uc?id=1CgB3tIMCkn1MPuhEFGB8EXeIJbC8WNv3", "models/ecg_model.h5", quiet=False)
+
+if not os.path.exists("models/classes.npy"):
+    print("[INFO] Downloading classes.npy from Google Drive...")
+    gdown.download("https://drive.google.com/uc?id=1QCuVgdG4kW3yPHIRgN6dfUgN8g6RBMzM", "models/classes.npy", quiet=False)
 model = tf.keras.models.load_model("models/ecg_model.h5")
 classes = np.load("models/classes.npy", allow_pickle=True)
 

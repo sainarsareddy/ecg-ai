@@ -10,7 +10,7 @@ import streamlit as st
 import wfdb
 
 # ── CONFIG ────────────────────────────────────────────────────────────────────
-API_URL = "http://172.18.8.180:8000"
+API_URL = "http://localhost:8000"
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FEEDBACK_FILE = os.path.join(ROOT_DIR, "feedback_dataset.csv")
 REPORTS_DIR = os.path.join(ROOT_DIR, "reports")
@@ -970,11 +970,11 @@ with st.sidebar:
             connected_pi = False
             ready        = False
 
-        if st.button("Fetch Signal (5s)", disabled=not ready):
-            with st.spinner("Fetching 1800 samples from Pi..."):
+        if st.button("Fetch Signal (15s)", disabled=not ready):
+            with st.spinner("Fetching 5400 samples from Pi (15 s window)..."):
                 try:
                     import requests as _req
-                    r = _req.get(f"{receiver_url}/signal?n=1800", timeout=10)
+                    r = _req.get(f"{receiver_url}/signal?n=5400", timeout=20)
                     data = r.json()
                     if "error" in data:
                         st.error(data["error"])
@@ -993,10 +993,10 @@ with st.sidebar:
             with st.spinner("Fetching from PhysioNet..."):
                 try:
                     rec = wfdb.rdrecord(record_id, pn_dir='mitdb')
-                    st.session_state["signal"] = rec.p_signal[:, 0][:1800].tolist()
+                    st.session_state["signal"] = rec.p_signal[:, 0][:5400].tolist()
                     st.session_state["result"] = None
                     st.session_state["feedback_done"] = False
-                    st.success(f"Record {record_id} loaded — 1800 samples")
+                    st.success(f"Record {record_id} loaded — 5400 samples")
                 except Exception as e:
                     st.error(str(e))
 
@@ -1146,19 +1146,34 @@ with tab1:
         st.markdown('<div class="section-title"><span>~</span> ECG WAVEFORM</div>', unsafe_allow_html=True)
         st.markdown('<div class="waveform-wrap">', unsafe_allow_html=True)
         fig = go.Figure()
+        sr       = 360                                    # samples per second
+        n_samples = len(signal)
+        time_axis = [i / sr for i in range(n_samples)]   # seconds on x-axis
+
         fig.add_trace(go.Scatter(
-            y=signal[:1200], mode='lines',
+            x=time_axis,
+            y=signal,
+            mode='lines',
             line=dict(color=T['waveform_color'], width=1.1),
             fill='tozeroy',
             fillcolor=f"rgba({'0,232,122' if dark else '14,165,233'},0.04)",
-            hovertemplate='<b>Sample:</b> %{x}<br><b>mV:</b> %{y:.4f}<extra></extra>'
+            hovertemplate='<b>Time:</b> %{x:.3f} s<br><b>Amplitude:</b> %{y:.4f}<extra></extra>'
         ))
         fig.update_layout(
-            **plot_layout(240),
-            xaxis=dict(**axis_style('Sample Index'), showspikes=True, spikecolor=T['divider']),
+            **plot_layout(260),
+            xaxis=dict(
+                **axis_style('Time (seconds)'),
+                showspikes=True,
+                spikecolor=T['divider'],
+                tickformat='.1f',
+                dtick=1.0,                                # tick every 1 second
+                rangeslider=dict(visible=True, thickness=0.06, bgcolor=T['card_bg']),
+            ),
             yaxis=dict(**axis_style('Amplitude (mV)')),
             hovermode='x unified'
         )
+        dur_s = n_samples / sr
+        st.caption(f"Signal: {n_samples} samples · {dur_s:.1f} s · {sr} Hz — drag the range slider below the chart to zoom")
         st.plotly_chart(fig, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 

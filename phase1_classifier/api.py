@@ -17,15 +17,15 @@ print("[STEP 2] core imports loaded")
 # ── DOWNLOAD MODEL FILES ──────────────────────────────────────────────────────
 os.makedirs("models", exist_ok=True)
 
-if not os.path.exists("models/ecg_model.h5"):
-    print("[INFO] Downloading ecg_model.h5...")
+if not os.path.exists("models/ecg_model_new.keras"):
+    print("[INFO] Downloading ecg_model_new.keras...")
     gdown.download(
-        "https://drive.google.com/uc?id=1CgB3tIMCkn1MPuhEFGB8EXeIJbC8WNv3&confirm=t",
-        "models/ecg_model.h5",
+        "https://drive.google.com/uc?id=1rnhKgjrYIOAOd4tICEwLXHVJImjRMzSY&confirm=t",
+        "models/ecg_model_new.keras",
         quiet=False,
         fuzzy=True
     )
-    print("[INFO] ecg_model.h5 downloaded")
+    print("[INFO] ecg_model_new.keras downloaded")
 
 if not os.path.exists("models/classes.npy"):
     print("[INFO] Downloading classes.npy...")
@@ -56,7 +56,7 @@ except Exception as e:
 # ── LOAD MODEL ────────────────────────────────────────────────────────────────
 try:
     print("[STEP 8] Loading model...")
-    model = tf.keras.models.load_model("models/ecg_model.h5", compile=False)
+    model = tf.keras.models.load_model("models/ecg_model_new.keras")
     classes = np.load("models/classes.npy", allow_pickle=True)
     print("[STEP 9] Model loaded successfully!")
 except Exception as e:

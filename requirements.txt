@@ -12,6 +12,8 @@ PyWavelets
 wfdb
 reportlab
 groq
+plotly
+streamlit
 python-dotenv
 anthropic
 pydantic

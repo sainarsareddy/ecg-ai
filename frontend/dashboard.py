@@ -741,7 +741,7 @@ div[data-testid="stSidebar"] div[data-testid="stToggle"] span[data-testid="stWid
 # ── HELPERS ───────────────────────────────────────────────────────────────────
 def call_api(signal):
     try:
-        r = requests.post(f"{API_URL}/predict", json={"ecg_signal": signal}, timeout=60)
+        r = requests.post(f"{API_URL}/predict", json={"ecg_signal": signal}, timeout=120)
         return (r.json(), None) if r.status_code == 200 else (None, f"API {r.status_code}")
     except Exception as e:
         return None, str(e)
@@ -799,7 +799,7 @@ def measure_row(label, value, unit="", normal_range=None):
 
 def api_status():
     try:
-        h = requests.get(f"{API_URL}/health", timeout=2).json()
+        h = requests.get(f"{API_URL}/health", timeout=5).json()
         return True, h
     except:
         return False, {}
